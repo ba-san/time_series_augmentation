@@ -1,6 +1,8 @@
 import numpy as np
 from tqdm import tqdm
 
+# x's shape is (train_amount, input_length, 1)
+
 def jitter(x, sigma=0.03):
     # https://arxiv.org/pdf/1706.00527.pdf
     return x + np.random.normal(loc=0., scale=sigma, size=x.shape)
@@ -13,12 +15,11 @@ def scaling(x, sigma=0.1):
 def rotation(x):
     flip = np.random.choice([-1, 1], size=(x.shape[0],x.shape[2]))
     rotate_axis = np.arange(x.shape[2])
-    np.random.shuffle(rotate_axis)    
+    np.random.shuffle(rotate_axis)
     return flip[:,np.newaxis,:] * x[:,:,rotate_axis]
 
 def permutation(x, max_segments=5, seg_mode="equal"):
     orig_steps = np.arange(x.shape[1])
-    
     num_segs = np.random.randint(1, max_segments, size=(x.shape[0]))
     
     ret = np.zeros_like(x)
@@ -43,7 +44,7 @@ def magnitude_warp(x, sigma=0.2, knot=4):
     random_warps = np.random.normal(loc=1.0, scale=sigma, size=(x.shape[0], knot+2, x.shape[2]))
     warp_steps = (np.ones((x.shape[2],1))*(np.linspace(0, x.shape[1]-1., num=knot+2))).T
     ret = np.zeros_like(x)
-    for i, pat in enumerate(x):
+    for i, pat in enumerate(x): # for each sample
         warper = np.array([CubicSpline(warp_steps[:,dim], random_warps[i,:,dim])(orig_steps) for dim in range(x.shape[2])]).T
         ret[i] = pat * warper
 

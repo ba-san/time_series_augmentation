@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import matplotlib.pyplot as plt
 
 def load_data_from_file(data_file, label_file=None, delimiter=" "):
     if label_file:
@@ -75,35 +76,54 @@ def run_augmentation(x, y, args):
         augmentation_tags = args.extra_tag
     return x_aug, y_aug, augmentation_tags
 
+def save_augimg(x, tag="none", dataset="NA"):
+    data_for_graph = x[0,:,0]
+    fig = plt.figure()
+    x = list(range(len(data_for_graph)))
+    plt.plot(x, data_for_graph)
+    #plt.ylim(-1,1) # for time&window warp
+    plt.title('Keras {}:'.format(dataset)+tag, fontsize=18)
+    fig.savefig("./Keras_{}_{}.png".format(dataset, tag))
+    print('saved.')
+    exit()
+
 def augment(x, y, args):
     import utils.augmentation as aug
     augmentation_tags = ""
     if args.jitter:
         x = aug.jitter(x)
+        save_augimg(x, "jitter", args.dataset)
         augmentation_tags += "_jitter"
     if args.scaling:
         x = aug.scaling(x)
+        save_augimg(x, "scaling", args.dataset)
         augmentation_tags += "_scaling"
     if args.rotation:
         x = aug.rotation(x)
+        save_augimg(x, "rotation", args.dataset)
         augmentation_tags += "_rotation"
     if args.permutation:
         x = aug.permutation(x)
+        save_augimg(x, "permutation", args.dataset)
         augmentation_tags += "_permutation"
     if args.randompermutation:
         x = aug.permutation(x, seg_mode="random")
         augmentation_tags += "_randomperm"
     if args.magwarp:
         x = aug.magnitude_warp(x)
+        save_augimg(x, "magnitude_warp", args.dataset)
         augmentation_tags += "_magwarp"
     if args.timewarp:
         x = aug.time_warp(x)
+        save_augimg(x, "time_warp", args.dataset)
         augmentation_tags += "_timewarp"
     if args.windowslice:
         x = aug.window_slice(x)
+        save_augimg(x, "window_slice", args.dataset)
         augmentation_tags += "_windowslice"
     if args.windowwarp:
         x = aug.window_warp(x)
+        save_augimg(x, "window_warp", args.dataset)
         augmentation_tags += "_windowwarp"
     if args.spawner:
         x = aug.spawner(x, y)
@@ -123,4 +143,6 @@ def augment(x, y, args):
     if args.discsdtw:
         x = aug.discriminative_guided_warp_shape(x, y)
         augmentation_tags += "_dgws"
+    else:
+        save_augimg(x,"none", args.dataset)
     return x, augmentation_tags
